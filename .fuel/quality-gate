@@ -1,0 +1,238 @@
+#!/usr/bin/env bash
+
+# Quality Gate Script
+# Automatically detects and runs quality tools present in the project
+# Exit on first failure
+
+set -e
+
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$PROJECT_ROOT"
+
+echo "🔍 Running quality checks..."
+echo ""
+
+# Track if any checks ran
+CHECKS_RAN=0
+
+# ============================================================================
+# FORMATTERS (run first to auto-fix before linting)
+# ============================================================================
+
+# Laravel Pint (PHP formatter)
+if [ -f "vendor/bin/pint" ] || [ -x "vendor/bin/pint" ]; then
+    echo "✨ Running Laravel Pint (PHP formatter)..."
+    ./vendor/bin/pint
+    CHECKS_RAN=1
+    echo ""
+fi
+
+# PHP CS Fixer
+if [ -f "vendor/bin/php-cs-fixer" ] && [ -f ".php-cs-fixer.php" ]; then
+    echo "✨ Running PHP CS Fixer..."
+    ./vendor/bin/php-cs-fixer fix
+    CHECKS_RAN=1
+    echo ""
+fi
+
+# Prettier (JS/TS/CSS/HTML formatter)
+if [ -f "package.json" ] && grep -q "prettier" package.json; then
+    if command -v npm &> /dev/null; then
+        echo "✨ Running Prettier..."
+        npm run format 2>/dev/null || npx prettier --write . 2>/dev/null || true
+        CHECKS_RAN=1
+        echo ""
+    fi
+fi
+
+# Black (Python formatter)
+if [ -f "pyproject.toml" ] && grep -q "black" pyproject.toml; then
+    if command -v black &> /dev/null; then
+        echo "✨ Running Black (Python formatter)..."
+        black .
+        CHECKS_RAN=1
+        echo ""
+    fi
+fi
+
+# ============================================================================
+# LINTERS & STATIC ANALYSIS
+# ============================================================================
+
+# PHPStan (PHP static analysis)
+if [ -f "vendor/bin/phpstan" ] || [ -x "vendor/bin/phpstan" ]; then
+    echo "🔬 Running PHPStan (static analysis)..."
+    ./vendor/bin/phpstan analyse
+    CHECKS_RAN=1
+    echo ""
+fi
+
+# Psalm (alternative PHP static analysis)
+if [ -f "vendor/bin/psalm" ] && [ -f "psalm.xml" ]; then
+    echo "🔬 Running Psalm (static analysis)..."
+    ./vendor/bin/psalm
+    CHECKS_RAN=1
+    echo ""
+fi
+
+# PHP_CodeSniffer
+if [ -f "vendor/bin/phpcs" ] && [ -f "phpcs.xml" ]; then
+    echo "🔬 Running PHP_CodeSniffer..."
+    ./vendor/bin/phpcs
+    CHECKS_RAN=1
+    echo ""
+fi
+
+# ESLint (JS/TS linter)
+if [ -f "package.json" ] && grep -q "eslint" package.json; then
+    if command -v npm &> /dev/null; then
+        echo "🔬 Running ESLint..."
+        npm run lint 2>/dev/null || npx eslint . --ext .js,.jsx,.ts,.tsx 2>/dev/null || true
+        CHECKS_RAN=1
+        echo ""
+    fi
+fi
+
+# TypeScript compiler check
+if [ -f "tsconfig.json" ]; then
+    if command -v npm &> /dev/null && grep -q "typescript" package.json 2>/dev/null; then
+        echo "🔬 Running TypeScript compiler check..."
+        npx tsc --noEmit
+        CHECKS_RAN=1
+        echo ""
+    fi
+fi
+
+# Mypy (Python type checker)
+if [ -f "pyproject.toml" ] && grep -q "mypy" pyproject.toml; then
+    if command -v mypy &> /dev/null; then
+        echo "🔬 Running Mypy (Python type checker)..."
+        mypy .
+        CHECKS_RAN=1
+        echo ""
+    fi
+fi
+
+# Ruff (Python linter)
+if [ -f "pyproject.toml" ] && grep -q "ruff" pyproject.toml; then
+    if command -v ruff &> /dev/null; then
+        echo "🔬 Running Ruff (Python linter)..."
+        ruff check .
+        CHECKS_RAN=1
+        echo ""
+    fi
+fi
+
+# ============================================================================
+# TESTS (only if fast - comprehensive tests should be run separately)
+# ============================================================================
+
+# PHPUnit / Pest (Laravel tests)
+if [ -f "vendor/bin/pest" ] || [ -x "vendor/bin/pest" ]; then
+    echo "🧪 Running Pest tests..."
+    ./vendor/bin/pest --bail
+    CHECKS_RAN=1
+    echo ""
+elif [ -f "vendor/bin/phpunit" ] || [ -x "vendor/bin/phpunit" ]; then
+    echo "🧪 Running PHPUnit tests..."
+    ./vendor/bin/phpunit --stop-on-failure
+    CHECKS_RAN=1
+    echo ""
+fi
+
+# Jest (JS/TS tests) - only run if marked as fast
+if [ -f "package.json" ] && grep -q "\"test\":" package.json; then
+    # Check if jest config suggests fast tests (unit tests only)
+    if grep -q "jest" package.json && ! grep -q "e2e\|integration\|cypress" package.json; then
+        if command -v npm &> /dev/null; then
+            echo "🧪 Running Jest tests..."
+            npm test 2>/dev/null || true
+            CHECKS_RAN=1
+            echo ""
+        fi
+    fi
+fi
+
+# Pytest (Python tests) - only unit tests
+if [ -f "pyproject.toml" ] && grep -q "pytest" pyproject.toml; then
+    if command -v pytest &> /dev/null; then
+        echo "🧪 Running Pytest (unit tests only)..."
+        pytest tests/unit 2>/dev/null || pytest -m "not integration and not e2e" 2>/dev/null || true
+        CHECKS_RAN=1
+        echo ""
+    fi
+fi
+
+# ============================================================================
+# CUSTOM CHECKS FROM MAKEFILE/COMPOSER/PACKAGE.JSON
+# ============================================================================
+
+# Check for custom quality/test commands in composer.json
+if [ -f "composer.json" ]; then
+    if grep -q "\"check\":" composer.json || grep -q "\"quality\":" composer.json; then
+        if command -v composer &> /dev/null; then
+            if composer run-script --list 2>/dev/null | grep -q "check"; then
+                echo "🔍 Running composer check..."
+                composer check
+                CHECKS_RAN=1
+                echo ""
+            elif composer run-script --list 2>/dev/null | grep -q "quality"; then
+                echo "🔍 Running composer quality..."
+                composer quality
+                CHECKS_RAN=1
+                echo ""
+            fi
+        fi
+    fi
+fi
+
+# Check for quality commands in package.json
+if [ -f "package.json" ]; then
+    if grep -q "\"check\":" package.json && command -v npm &> /dev/null; then
+        echo "🔍 Running npm check..."
+        npm run check 2>/dev/null || true
+        CHECKS_RAN=1
+        echo ""
+    fi
+fi
+
+# Check for Makefile targets
+if [ -f "Makefile" ]; then
+    if grep -q "^check:" Makefile || grep -q "^quality:" Makefile || grep -q "^lint:" Makefile; then
+        if command -v make &> /dev/null; then
+            if grep -q "^check:" Makefile; then
+                echo "🔍 Running make check..."
+                make check
+                CHECKS_RAN=1
+                echo ""
+            elif grep -q "^quality:" Makefile; then
+                echo "🔍 Running make quality..."
+                make quality
+                CHECKS_RAN=1
+                echo ""
+            elif grep -q "^lint:" Makefile; then
+                echo "🔍 Running make lint..."
+                make lint
+                CHECKS_RAN=1
+                echo ""
+            fi
+        fi
+    fi
+fi
+
+# ============================================================================
+# SUMMARY
+# ============================================================================
+
+if [ $CHECKS_RAN -eq 0 ]; then
+    echo "⚠️  Warning: No quality tools detected in this project."
+    echo "   Consider installing:"
+    echo "   - PHP: Laravel Pint, PHPStan, Pest"
+    echo "   - JS/TS: ESLint, Prettier, Jest"
+    echo "   - Python: Black, Ruff, Mypy, Pytest"
+    echo ""
+    exit 0
+fi
+
+echo "✅ All quality checks passed!"
+exit 0

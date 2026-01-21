@@ -1,0 +1,6 @@
+.fuel/*
+!.fuel/reality.md
+!.fuel/plans/
+!.fuel/prompts/
+!.fuel/quality-gate
+.fuel/prompts/*.new
