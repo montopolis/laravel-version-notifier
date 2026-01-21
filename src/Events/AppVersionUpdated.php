@@ -33,4 +33,15 @@ class AppVersionUpdated implements ShouldBroadcastNow
             'version' => $this->version ?? app('version-notifier')->get(false),
         ];
     }
+
+    /**
+     * Get the broadcast event name.
+     *
+     * By default Laravel uses the full class name (e.g., .Montopolis.LaravelVersionNotifier.Events.AppVersionUpdated)
+     * This provides a clean event name that matches what the frontend JavaScript expects.
+     */
+    public function broadcastAs(): string
+    {
+        return 'AppVersionUpdated';
+    }
 }
