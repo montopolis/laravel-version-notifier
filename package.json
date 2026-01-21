@@ -1,0 +1,45 @@
+{
+    "name": "laravel-version-notifier",
+    "version": "1.0.0",
+    "description": "Version notification system for Laravel applications with WebSocket, polling, and chunk error detection",
+    "type": "module",
+    "main": "dist/version-notifier.umd.js",
+    "module": "dist/version-notifier.js",
+    "exports": {
+        ".": {
+            "import": "./dist/version-notifier.js",
+            "require": "./dist/version-notifier.umd.js"
+        },
+        "./sentry": {
+            "import": "./dist/sentry-integration.js"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "vite build",
+        "dev": "vite build --watch"
+    },
+    "devDependencies": {
+        "vite": "^5.0.0"
+    },
+    "peerDependencies": {
+        "laravel-echo": "^1.16.0"
+    },
+    "peerDependenciesMeta": {
+        "laravel-echo": {
+            "optional": true
+        }
+    },
+    "keywords": [
+        "laravel",
+        "version",
+        "notification",
+        "websocket",
+        "reverb",
+        "deployment"
+    ],
+    "author": "",
+    "license": "MIT"
+}
