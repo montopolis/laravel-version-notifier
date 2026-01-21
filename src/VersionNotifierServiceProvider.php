@@ -2,8 +2,11 @@
 
 namespace Montopolis\LaravelVersionNotifier;
 
+use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use Montopolis\LaravelVersionNotifier\Commands\BroadcastVersionCommand;
+use Montopolis\LaravelVersionNotifier\Middleware\InjectVersionContext;
 use Montopolis\LaravelVersionNotifier\Support\VersionManager;
 
 class VersionNotifierServiceProvider extends ServiceProvider
@@ -42,5 +45,13 @@ class VersionNotifierServiceProvider extends ServiceProvider
         if (config('version-notifier.endpoint.enabled', true)) {
             $this->loadRoutesFrom(__DIR__.'/../routes/version-notifier.php');
         }
+
+        $this->registerMiddleware();
+    }
+
+    protected function registerMiddleware(): void
+    {
+        $router = $this->app->make(Router::class);
+        $router->aliasMiddleware('version-context', InjectVersionContext::class);
     }
 }
