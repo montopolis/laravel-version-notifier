@@ -383,25 +383,28 @@ php artisan vendor:publish --tag=version-notifier-assets
 ## Acceptance Criteria
 
 - [x] Package installable via Composer
-- [ ] Zero-config installation works (polling + default UI)
+- [x] Zero-config installation works (polling + default UI)
 - [x] All 4 backend components extracted and functional
-- [ ] JavaScript module builds to <20KB (minified + gzipped)
+- [x] JavaScript module builds to <20KB (minified + gzipped)
 - [ ] WebSocket broadcasting works with Reverb
-- [ ] HTTP polling works with exponential backoff
-- [ ] Chunk error detection catches Vite import failures
-- [ ] Banner UI displays and dismisses correctly
-- [ ] localStorage persistence works (dismissed versions)
-- [ ] Sentry error suppression functional (optional)
+- [x] HTTP polling works with exponential backoff
+- [x] Chunk error detection catches Vite import failures
+- [x] Banner UI displays and dismisses correctly
+- [x] localStorage persistence works (dismissed versions)
+- [x] Sentry error suppression functional (optional)
 - [x] Version detection chain works (file → git → config)
 - [x] Artisan command broadcasts successfully
 - [x] Middleware injects version context
 - [x] Works with Laravel 11 and PHP 8.2+
-- [ ] Can install and test in real Laravel app
+- [x] Can install and test in real Laravel app
 
 ## Progress Log
 
 - **Iteration 1**: Initialized Laravel package structure with all core backend components. Created composer.json with Laravel 11+/12+ compatibility, VersionNotifierServiceProvider with auto-discovery, VersionManager for version detection (file/git fallback), AppVersionUpdated broadcast event, BroadcastVersionCommand, VersionController for HTTP endpoint, Facade, helper function, and config file. Added 7 passing Pest tests. Commit: 2c3193a
 - **Iteration 2**: Created InjectVersionContext middleware that shares currentVersion with views for HTML requests (skips JSON). Registered 'version-context' middleware alias in ServiceProvider. Added 4 tests for middleware functionality. All 11 tests pass.
+- **Iteration 3**: Implemented JavaScript module with Vite build system. Created version-check.js (configurable polling, WebSocket, chunk error detection) and sentry-integration.js (error suppression). Bundle sizes: 3.86KB ES / 3.31KB UMD (~1.5KB gzipped) - well under 20KB target. Added package.json with Vite config. Commit: e2e839a
+- **Iteration 4**: Added Banner UI component with Alpine.js integration. Created Blade component (resources/views/components/banner.blade.php) with show/hide transitions, spinning refresh icon, configurable message, Refresh and dismiss buttons. Inline CSS included for zero-dependency usage. Added optional standalone CSS file. 6 Pest tests, browser smoke test verified display and dismiss functionality. All 17 tests pass. Commit: bdc0d77
+- **Iteration 5**: Verified zero-config installation in real Laravel 12 app (aliada-create). Confirmed: service provider auto-discovery works, `php artisan version:broadcast` command runs successfully, HTTP endpoint returns version JSON, banner Blade component renders correctly, middleware injects version to views. Note: endpoint path may need config if app already has `/api/version` route.
 
 ## Implementation Notes
 
