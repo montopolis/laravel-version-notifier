@@ -1,0 +1,111 @@
+/**
+ * Version Notifier Banner Styles
+ *
+ * This file provides optional styling for the version notifier banner.
+ * The Blade component includes inline styles, so this file is optional.
+ *
+ * Customization:
+ * Set CSS custom properties to override the default colors:
+ *
+ * :root {
+ *     --version-notifier-bg: #4f46e5;           // Banner background
+ *     --version-notifier-text: #ffffff;          // Banner text
+ *     --version-notifier-btn-bg: #ffffff;        // Refresh button background
+ *     --version-notifier-btn-text: #4f46e5;      // Refresh button text
+ *     --version-notifier-dismiss: rgba(255, 255, 255, 0.7);  // Dismiss button
+ *     --version-notifier-dismiss-hover: #ffffff;  // Dismiss button hover
+ * }
+ *
+ * Or for Tailwind CSS users, extend your theme to use these variables.
+ */
+
+[x-cloak] {
+    display: none !important;
+}
+
+@keyframes version-notifier-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.version-notifier-banner {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 50;
+}
+
+.version-notifier-banner-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    background-color: var(--version-notifier-bg, #4f46e5);
+    color: var(--version-notifier-text, #ffffff);
+}
+
+.version-notifier-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+    animation: version-notifier-spin 3s linear infinite;
+}
+
+.version-notifier-message {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.version-notifier-refresh-btn {
+    background-color: var(--version-notifier-btn-bg, #ffffff);
+    color: var(--version-notifier-btn-text, #4f46e5);
+    border-radius: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: transform 150ms ease, filter 150ms ease;
+}
+
+.version-notifier-refresh-btn:hover {
+    transform: scale(1.05);
+    filter: brightness(0.95);
+}
+
+.version-notifier-dismiss-btn {
+    color: var(--version-notifier-dismiss, rgba(255, 255, 255, 0.7));
+    transition: color 150ms ease;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.version-notifier-dismiss-btn:hover {
+    color: var(--version-notifier-dismiss-hover, #ffffff);
+}
+
+.version-notifier-dismiss-btn svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+/* Transition utilities (if not using Tailwind) */
+.version-notifier-banner.transition {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .version-notifier-banner-content {
+        background-color: var(--version-notifier-bg-dark, var(--version-notifier-bg, #6366f1));
+    }
+}
