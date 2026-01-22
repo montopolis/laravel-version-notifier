@@ -38,6 +38,11 @@ class VersionNotifierServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__.'/../database/migrations/add_version_tracking_to_users_table.php.stub' => database_path('migrations/'.date('Y_m_d_His').'_add_version_tracking_to_users_table.php'),
             ], 'version-notifier-migrations');
+
+            $this->publishes([
+                __DIR__.'/../dist/version-notifier.js' => public_path('vendor/version-notifier/version-notifier.js'),
+                __DIR__.'/../dist/sentry-integration.js' => public_path('vendor/version-notifier/sentry-integration.js'),
+            ], 'version-notifier-assets');
         }
 
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'version-notifier');
