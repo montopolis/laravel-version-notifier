@@ -11,6 +11,16 @@ A version notification system for Laravel applications that detects new deployme
 - **Zero Dependencies** - Works with any Laravel application
 - **Customizable UI** - Banner component with Alpine.js for easy customization
 
+## Quick Start Checklist
+
+Before you begin, ensure you have:
+
+- [ ] **Reverb Credentials** - App-specific credentials from your Reverb service (or install local Reverb)
+- [ ] **Pusher PHP SDK** - `composer require pusher/pusher-php-server`
+- [ ] **npm packages** - `laravel-echo` and `pusher-js`
+- [ ] **Git repository** - For version hash generation
+- [ ] **Laravel 11 or 12** - Package requires modern Laravel
+
 ## Installation
 
 ### 1. Install the Package
@@ -33,6 +43,16 @@ Then install:
 ```bash
 composer require montopolis/laravel-version-notifier:@dev
 ```
+
+**Server-side broadcasting dependency:**
+
+If not already installed, you'll need the Pusher PHP SDK for broadcasting:
+
+```bash
+composer require pusher/pusher-php-server
+```
+
+**Helper function:** The package automatically provides an `app_version()` helper function for accessing the current version.
 
 For CI/CD, add GitHub token authentication to your workflow:
 
@@ -59,9 +79,34 @@ php artisan vendor:publish --tag=version-notifier-assets
 php artisan vendor:publish --tag=version-notifier-views
 ```
 
-### 3. Configure Broadcasting (Laravel Reverb)
+### 3. Install Broadcasting Dependencies
 
-**Important:** Each application should have its own dedicated Reverb credentials. Do not share credentials across applications.
+Install Reverb credentials for your application:
+
+**Option A: Using existing Reverb service**
+
+If your organization has a standalone Reverb service, obtain app-specific credentials from your team:
+- `REVERB_APP_ID` - Unique application ID
+- `REVERB_APP_KEY` - Public key for client connections
+- `REVERB_APP_SECRET` - Secret for server-side broadcasting
+- `REVERB_HOST` - Reverb server hostname
+- `REVERB_PORT` - Reverb server port (usually 443 for HTTPS)
+- `REVERB_SCHEME` - Connection scheme (http or https)
+
+**Option B: Local Reverb server (development)**
+
+For local development without a standalone Reverb service:
+
+```bash
+composer require laravel/reverb
+php artisan reverb:install
+```
+
+This will generate local credentials automatically. See [Laravel Reverb documentation](https://laravel.com/docs/broadcasting#reverb) for details.
+
+### 4. Configure Broadcasting (Laravel Reverb)
+
+**Important:** Each application should have its own dedicated Reverb credentials. Do not share credentials across applications to avoid channel conflicts.
 
 Add Reverb credentials to your `.env`:
 
@@ -100,7 +145,7 @@ Update `config/broadcasting.php` (may already exist):
 ],
 ```
 
-### 4. Configure Version Notifier
+### 5. Configure Version Notifier
 
 Edit `config/version-notifier.php` and set a unique channel name for your application:
 
@@ -109,6 +154,32 @@ Edit `config/version-notifier.php` and set a unique channel name for your applic
     'enabled' => true,
     'channel' => 'your-app-name', // IMPORTANT: Use unique channel per app
 ],
+```
+
+### 6. Generate Initial Version File (Required)
+
+The version notifier needs a `public/version.html` file to track the current version. Generate it now:
+
+```bash
+# Generate initial version file
+git rev-parse HEAD | cut -c -8 > public/version.html
+date +"%Y-%m-%d %T" >> public/version.html
+```
+
+This creates a file containing:
+```
+abc12345
+2025-01-21 14:30:00
+```
+
+**Important:**
+- This file MUST exist for version detection to work
+- It will be automatically updated on each deployment (see Deployment Integration section)
+- Add `public/version.html` to `.gitignore` (it's deployment-specific)
+
+```bash
+# Add to .gitignore
+echo "public/version.html" >> .gitignore
 ```
 
 ## Frontend Integration
