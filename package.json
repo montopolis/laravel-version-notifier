@@ -21,7 +21,7 @@
         "dev": "vite build --watch"
     },
     "devDependencies": {
-        "vite": "^7.3.2"
+        "vite": "^8.0.16"
     },
     "peerDependencies": {
         "laravel-echo": "^1.16.0 || ^2.0.0"
