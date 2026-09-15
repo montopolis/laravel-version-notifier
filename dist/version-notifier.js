@@ -1,67 +1,65 @@
-const i = window.versionNotifierConfig || {}, v = i.pollInterval || 5 * 60 * 1e3, E = i.initialPollDelay || 30 * 1e3, L = i.maxBackoffMultiplier || 4, p = i.storageKey || "version-notifier-dismissed", b = i.apiEndpoint || "/api/version", d = i.broadcastChannel || "app", C = i.broadcastEvent || "AppVersionUpdated";
-let r = null, n = null, a = !1, c = null, s = 0, f = !1, u = !1;
+const e = window.versionNotifierConfig || {}, v = e.pollInterval || 300 * 1e3, E = e.initialPollDelay || 30 * 1e3, L = e.maxBackoffMultiplier || 4, g = e.storageKey || "version-notifier-dismissed", b = e.apiEndpoint || "/api/version", l = e.broadcastChannel || "app", C = e.broadcastEvent || "AppVersionUpdated";
+let t = null, n = null, s = !1, a = null, r = 0, d = !1, f = !1;
 function A() {
-  var e, o, t;
-  if (!u) {
-    if (r = ((e = window.versionNotifierConfig) == null ? void 0 : e.initialVersion) || ((o = window.context) == null ? void 0 : o.version) || ((t = document.querySelector('meta[name="app-version"]')) == null ? void 0 : t.content), !r) {
-      i.debug && console.warn("[VersionNotifier] No initial version found. Provide via config, window.context, or meta tag.");
+  if (!f) {
+    if (t = window.versionNotifierConfig?.initialVersion || window.context?.version || document.querySelector('meta[name="app-version"]')?.content, !t) {
+      e.debug && console.warn("[VersionNotifier] No initial version found. Provide via config, window.context, or meta tag.");
       return;
     }
-    u = !0, i.debug && console.log("[VersionNotifier] Initialized with version:", r), i.websocket !== !1 && I(), i.polling !== !1 && k(), i.chunkErrors !== !1 && T();
+    f = !0, e.debug && console.log("[VersionNotifier] Initialized with version:", t), e.websocket !== !1 && I(), e.polling !== !1 && k(), e.chunkErrors !== !1 && T();
   }
 }
 function I() {
-  window.Echo && w(), window.addEventListener("EchoLoaded", () => {
-    w();
+  window.Echo && u(), window.addEventListener("EchoLoaded", () => {
+    u();
   });
 }
-function w() {
-  !window.Echo || f || (f = !0, i.debug && console.log("[VersionNotifier] Subscribing to channel:", d), window.Echo.channel(d).listen(C, (e) => {
-    i.debug && console.log("[VersionNotifier] Received broadcast:", e), e.version && e.version !== r && (n = e.version, l());
+function u() {
+  !window.Echo || d || (d = !0, e.debug && console.log("[VersionNotifier] Subscribing to channel:", l), window.Echo.channel(l).listen(C, (i) => {
+    e.debug && console.log("[VersionNotifier] Received broadcast:", i), i.version && i.version !== t && (n = i.version, c());
   }));
 }
 function k() {
-  c = setTimeout(() => h(), E);
+  a = setTimeout(() => p(), E);
 }
-async function h() {
-  if (a)
+async function p() {
+  if (s)
     return;
   await S();
-  const e = Math.min(
-    Math.pow(2, s),
+  const i = Math.min(
+    Math.pow(2, r),
     L
-  ), o = v * e;
-  i.debug && console.log("[VersionNotifier] Next poll in:", o / 1e3, "seconds"), c = setTimeout(() => h(), o);
+  ), o = v * i;
+  e.debug && console.log("[VersionNotifier] Next poll in:", o / 1e3, "seconds"), a = setTimeout(() => p(), o);
 }
 async function S() {
   try {
-    const e = await fetch(b, {
+    const i = await fetch(b, {
       headers: {
         Accept: "application/json"
       }
     });
-    if (!e.ok) {
-      s++;
+    if (!i.ok) {
+      r++;
       return;
     }
-    s = 0;
-    const o = await e.json();
-    o.version && o.version !== r && (n = o.version, l());
+    r = 0;
+    const o = await i.json();
+    o.version && o.version !== t && (n = o.version, c());
   } catch {
-    s++;
+    r++;
   }
 }
 function T() {
-  window.addEventListener("unhandledrejection", (e) => {
-    var t;
-    const o = ((t = e.reason) == null ? void 0 : t.message) || String(e.reason);
-    g(o) && (i.debug && console.warn("[VersionNotifier] Chunk load error detected:", o), e.preventDefault(), l());
-  }), window.addEventListener("error", (e) => {
-    const o = e.message || "";
-    g(o) && (i.debug && console.warn("[VersionNotifier] Chunk load error detected:", o), e.preventDefault(), l());
+  window.addEventListener("unhandledrejection", (i) => {
+    const o = i.reason?.message || String(i.reason);
+    w(o) && (e.debug && console.warn("[VersionNotifier] Chunk load error detected:", o), i.preventDefault(), c());
+  }), window.addEventListener("error", (i) => {
+    const o = i.message || "";
+    w(o) && (e.debug && console.warn("[VersionNotifier] Chunk load error detected:", o), i.preventDefault(), c());
   });
 }
-function g(e) {
+function w(i) {
   return [
     "Failed to fetch dynamically imported module",
     "Loading chunk",
@@ -69,69 +67,69 @@ function g(e) {
     "ChunkLoadError",
     "Importing a module script failed"
   ].some(
-    (t) => e.toLowerCase().includes(t.toLowerCase())
+    (V) => i.toLowerCase().includes(V.toLowerCase())
   );
 }
-function l() {
-  if (!a) {
+function c() {
+  if (!s) {
     if (n)
       try {
-        if (localStorage.getItem(p) === n) {
-          i.debug && console.log("[VersionNotifier] Version already dismissed:", n);
+        if (localStorage.getItem(g) === n) {
+          e.debug && console.log("[VersionNotifier] Version already dismissed:", n);
           return;
         }
       } catch {
       }
-    a = !0, c && clearTimeout(c), i.debug && console.log("[VersionNotifier] Showing update prompt. New version:", n), window.dispatchEvent(
+    s = !0, a && clearTimeout(a), e.debug && console.log("[VersionNotifier] Showing update prompt. New version:", n), window.dispatchEvent(
       new CustomEvent("app:update-available", {
         detail: {
-          currentVersion: r,
+          currentVersion: t,
           newVersion: n
         }
       })
     );
   }
 }
-function m() {
+function h() {
   if (n)
     try {
-      localStorage.setItem(p, n);
+      localStorage.setItem(g, n);
     } catch {
     }
-  i.debug && console.log("[VersionNotifier] Dismissed version:", n);
+  e.debug && console.log("[VersionNotifier] Dismissed version:", n);
 }
-function N() {
+function m() {
   window.location.reload();
 }
-function V() {
-  return a;
+function N() {
+  return s;
 }
 function y() {
-  return r;
+  return t;
 }
 function P() {
   return n;
 }
 const _ = {
   init: A,
-  hasUpdate: V,
-  refresh: N,
-  dismiss: m,
+  hasUpdate: N,
+  refresh: m,
+  dismiss: h,
   getInitialVersion: y,
   getNewVersion: P
 };
 window.VersionNotifier = _;
 window.versionCheck = {
-  dismiss: m,
-  refresh: N,
-  hasUpdate: V
+  dismiss: h,
+  refresh: m,
+  hasUpdate: N
 };
 export {
   _ as default,
-  m as dismiss,
+  h as dismiss,
   y as getInitialVersion,
   P as getNewVersion,
-  V as hasUpdate,
+  N as hasUpdate,
   A as init,
-  N as refresh
+  m as refresh
 };

@@ -1,12 +1,11 @@
-function a(s = {}) {
-  const { customBeforeSend: n, debug: f = !1 } = s;
-  return function(o, u) {
-    var e, t, r, i;
-    return (t = (e = window.VersionNotifier) == null ? void 0 : e.hasUpdate) != null && t.call(e) || (i = (r = window.versionCheck) == null ? void 0 : r.hasUpdate) != null && i.call(r) ? (f && console.log("[VersionNotifier] Suppressing Sentry error due to version mismatch"), null) : n ? n(o, u) : o;
+function i(n = {}) {
+  const { customBeforeSend: e, debug: o = !1 } = n;
+  return function(r, t) {
+    return window.VersionNotifier?.hasUpdate?.() || window.versionCheck?.hasUpdate?.() ? (o && console.log("[VersionNotifier] Suppressing Sentry error due to version mismatch"), null) : e ? e(r, t) : r;
   };
 }
-const c = { createSentryBeforeSend: a };
+const f = { createSentryBeforeSend: i };
 export {
-  a as createSentryBeforeSend,
-  c as default
+  i as createSentryBeforeSend,
+  f as default
 };

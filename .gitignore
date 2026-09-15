@@ -6,10 +6,5 @@ phpstan.neon
 .DS_Store
 composer.lock
 
-# Fuel
-.fuel/*
-!.fuel/reality.md
-!.fuel/plans/
-!.fuel/prompts/
-!.fuel/quality-gate
-.fuel/prompts/*.new
+.idea
+tests/browser-test.html
