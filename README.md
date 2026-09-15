@@ -580,7 +580,3 @@ Dynamic import fails → Chunk error detected → Banner
 - **Polling:** 1 request every 5 minutes per user (when WebSocket fails)
 - **Broadcast:** Non-blocking, continues deployment on failure
 - **Bundle Size:** ~4KB (version-notifier.js, minified)
-
-## License
-
-Proprietary - Internal use only.
