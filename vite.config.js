@@ -12,8 +12,7 @@ export default defineConfig({
         },
         outDir: 'dist',
         emptyDirBeforeWrite: true,
-        minify: 'esbuild',
-        rollupOptions: {
+        rolldownOptions: {
             external: ['laravel-echo'],
             output: {
                 entryFileNames: '[name].js',
